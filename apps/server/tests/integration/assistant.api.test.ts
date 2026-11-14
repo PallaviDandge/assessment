@@ -21,7 +21,8 @@ function app(llm = fakeLlm(), opts: { rateLimitPerMinute?: number } = {}) {
 
 /** Read an NDJSON body and validate every line against the shared contract. */
 function ndjson(res: request.Response): StreamEvent[] {
-  return (res.text as string)
+  // rawText() below uses a custom parser, whose result lands on res.body.
+  return (res.body as string)
     .split("\n")
     .filter(Boolean)
     .map((line) => StreamEventSchema.parse(JSON.parse(line)));
