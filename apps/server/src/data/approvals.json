@@ -1,0 +1,42 @@
+[
+  {
+    "id": "apr-001",
+    "title": "Site Patrol Onboarding & Checklists",
+    "type": "Folder",
+    "submittedBy": "Sam HelpAdmin",
+    "status": "pending_review",
+    "submittedAt": "2026-09-18T08:05:00.000Z",
+    "location": "My Site Patrol › My Site Patrol Card",
+    "description": "Standard operating procedures, emergency drills and technician check-in checklists for new site patrol staff."
+  },
+  {
+    "id": "apr-002",
+    "title": "Level 2 Drone Patrol Video Demo",
+    "type": "Video",
+    "submittedBy": "Alex HelpAdmin",
+    "status": "pending_review",
+    "submittedAt": "2026-09-18T09:40:00.000Z",
+    "location": "Drawing Videos › Drawing Videos Card",
+    "description": "Recorded demonstration of the level 2 drone patrol route, used for operator training."
+  },
+  {
+    "id": "apr-003",
+    "title": "Safety Equipment & Sensor Specs",
+    "type": "PDF",
+    "submittedBy": "Sam HelpAdmin",
+    "status": "pending_review",
+    "submittedAt": "2026-09-18T11:15:00.000Z",
+    "location": "Site Recordings › Site Recordings",
+    "description": "Specification sheet for personal protective equipment and gas / smoke sensor thresholds on site."
+  },
+  {
+    "id": "apr-004",
+    "title": "360° Spatial Zone Layout & Camera Map",
+    "type": "Image",
+    "submittedBy": "Elena HelpAdmin",
+    "status": "pending_review",
+    "submittedAt": "2026-09-18T14:30:00.000Z",
+    "location": "Site Recordings › Site Recordings",
+    "description": "Panoramic zone layout showing camera positions and restricted areas."
+  }
+]

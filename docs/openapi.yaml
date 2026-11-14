@@ -1,0 +1,173 @@
+openapi: 3.1.0
+info:
+  title: Approvals Assistant API
+  version: 1.0.0
+  description: |
+    Hand-written contract for the Approvals assistant. The executable source of
+    truth is packages/shared/src/index.ts (Zod); this file mirrors it for
+    reviewers. All AI endpoints are rate limited per session (x-session-id
+    header) and never return a raw 500 on LLM failure: they degrade to a
+    deterministic answer and say so via `source` / `outcome`.
+servers:
+  - url: http://localhost:4000
+paths:
+  /api/health:
+    get:
+      responses:
+        "200": { description: OK }
+  /api/queue:
+    get:
+      summary: Pending approvals (seeded fixture)
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/ApprovalItem" } }
+  /api/assistant/greeting:
+    post:
+      summary: Context-aware greeting ("Replay Greeting")
+      parameters: [{ $ref: "#/components/parameters/SessionId" }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                locale: { $ref: "#/components/schemas/Locale" }
+                operatorName: { type: string, maxLength: 60 }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [source, promptVersion, greeting, pendingCount]
+                properties:
+                  source: { $ref: "#/components/schemas/Source" }
+                  promptVersion: { type: string }
+                  greeting: { type: string }
+                  pendingCount: { type: integer, minimum: 0 }
+        "400": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+  /api/assistant/summary:
+    post:
+      summary: Structured, urgency-ranked queue summary ("Present me Summary")
+      parameters: [{ $ref: "#/components/parameters/SessionId" }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                locale: { $ref: "#/components/schemas/Locale" }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [source, promptVersion, generatedAt, locale, summary]
+                properties:
+                  source: { $ref: "#/components/schemas/Source" }
+                  promptVersion: { type: string }
+                  generatedAt: { type: string, format: date-time }
+                  locale: { $ref: "#/components/schemas/Locale" }
+                  notice: { type: string }
+                  summary:
+                    type: object
+                    required: [headline, items]
+                    properties:
+                      headline: { type: string, maxLength: 300 }
+                      items:
+                        type: array
+                        minItems: 1
+                        description: Exactly one entry per queue item, most urgent first.
+                        items:
+                          type: object
+                          required: [id, priority, reason, suggestedAction]
+                          properties:
+                            id: { type: string }
+                            priority: { type: string, enum: [high, medium, low] }
+                            reason: { type: string, maxLength: 400 }
+                            suggestedAction: { type: string, maxLength: 200 }
+        "400": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+  /api/assistant/chat:
+    post:
+      summary: Streaming conversation for talk / help / teach modes
+      parameters: [{ $ref: "#/components/parameters/SessionId" }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mode, messages]
+              properties:
+                mode: { type: string, enum: [talk, help, teach] }
+                locale: { $ref: "#/components/schemas/Locale" }
+                messages:
+                  type: array
+                  minItems: 1
+                  maxItems: 20
+                  description: Must start and end with a user message.
+                  items:
+                    type: object
+                    required: [role, content]
+                    properties:
+                      role: { type: string, enum: [user, assistant] }
+                      content: { type: string, minLength: 1, maxLength: 2000 }
+      responses:
+        "200":
+          description: |
+            NDJSON stream (application/x-ndjson), one event per line:
+            `{"type":"meta","promptVersion":"..","citations":[{"id","title"}]}` once,
+            `{"type":"delta","text":".."}` zero or more times,
+            `{"type":"done","outcome":"ai|fallback|rule|partial","reason":".."}` once.
+          content:
+            application/x-ndjson:
+              schema: { type: string }
+        "400": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+components:
+  parameters:
+    SessionId:
+      name: x-session-id
+      in: header
+      required: false
+      description: Client-generated session id used as the rate-limit key (falls back to IP).
+      schema: { type: string }
+  schemas:
+    Locale: { type: string, enum: [en, hi, es, fr, de], default: en }
+    Source:
+      type: string
+      enum: [ai, fallback, rule]
+      description: ai = validated LLM output; fallback = LLM failed, deterministic answer; rule = LLM deliberately not called.
+    ApprovalItem:
+      type: object
+      required: [id, title, type, submittedBy, status, submittedAt, location, description]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        type: { type: string, enum: [Folder, Video, PDF, Image] }
+        submittedBy: { type: string }
+        status: { type: string, enum: [pending_review] }
+        submittedAt: { type: string, format: date-time }
+        location: { type: string }
+        description: { type: string }
+  responses:
+    Error:
+      description: Validation, rate-limit or unexpected error (always JSON)
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [error]
+            properties:
+              error:
+                type: object
+                required: [code, message]
+                properties:
+                  code: { type: string, enum: [invalid_request, rate_limited, not_found, internal] }
+                  message: { type: string }
+                  retryAfterSeconds: { type: number }
+                  details: {}

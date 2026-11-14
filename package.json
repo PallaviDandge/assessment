@@ -1,0 +1,17 @@
+{
+  "name": "crystal-ball-approvals-assistant",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,web -c blue,green \"npm run dev -w @cb/server\" \"npm run dev -w @cb/web\"",
+    "test": "npm test -w @cb/server && npm test -w @cb/web",
+    "typecheck": "npm run typecheck -w @cb/shared && npm run typecheck -w @cb/server && npm run typecheck -w @cb/web"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.7",
+    "typescript": "^5.9.3"
+  }
+}
