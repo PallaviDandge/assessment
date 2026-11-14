@@ -1,6 +1,6 @@
 import { SummaryResponseSchema } from "@cb/shared";
 import { getSummary } from "../../src/services/summary";
-import { rankQueue } from "../../src/services/ranking";
+import { formatWait, rankQueue } from "../../src/services/ranking";
 import { loadQueue } from "../../src/data/queue";
 import { SUMMARY_PROMPT } from "../../src/prompts/summary";
 import { LlmTimeoutError, LlmInvalidOutputError } from "../../src/llm/errors";
@@ -110,6 +110,11 @@ describe("rankQueue (deterministic fallback)", () => {
     expect(new Set(ranked.items.map((i) => i.id))).toEqual(new Set(queue.map((q) => q.id)));
     expect(ranked.items).toHaveLength(queue.length);
     expect(ranked.items[0]).toMatchObject({ id: "apr-003", priority: "high" });
+  });
+
+  it("describes waiting time in hours for short waits and days for long ones", () => {
+    expect(formatWait(5.4)).toBe("5h");
+    expect(formatWait(30 * 24)).toBe("30 days");
   });
 
   it("orders items so priorities never go up as you read down the list", () => {

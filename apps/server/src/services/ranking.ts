@@ -39,6 +39,10 @@ export function rankItems(queue: ApprovalItem[], now: Date): Classified[] {
     );
 }
 
+export function formatWait(hours: number): string {
+  return hours < 48 ? `${Math.round(hours)}h` : `${Math.round(hours / 24)} days`;
+}
+
 const ACTIONS: Record<Priority, string> = {
   high: "Review now and check thresholds against the HMI Panel",
   medium: "Review today; confirm every checklist step is present",
@@ -59,7 +63,7 @@ export function rankQueue(queue: ApprovalItem[], now: Date): SummaryContent {
       return {
         id: item.id,
         priority,
-        reason: `${category} content (${slaHours}h review target); waiting ${Math.round(waited)}h${overdue ? ", overdue, escalate to the Site Supervisor" : ""}.`,
+        reason: `${category} content (${slaHours}h review target); waiting ${formatWait(waited)}${overdue ? ", overdue, escalate to the Site Supervisor" : ""}.`,
         suggestedAction: ACTIONS[priority],
       };
     }),
