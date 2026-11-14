@@ -111,10 +111,16 @@ export type GreetingResponse = z.infer<typeof GreetingResponseSchema>;
 export const ChatModeSchema = z.enum(["talk", "help", "teach"]);
 export type ChatMode = z.infer<typeof ChatModeSchema>;
 
-export const ChatMessageSchema = z.object({
-  role: z.enum(["user", "assistant"]),
-  content: z.string().trim().min(1).max(2000),
-});
+/** Operators type at most 2,000 chars; assistant turns echoed back as history may be longer. */
+export const ChatMessageSchema = z
+  .object({
+    role: z.enum(["user", "assistant"]),
+    content: z.string().trim().min(1).max(8000),
+  })
+  .refine((m) => m.role !== "user" || m.content.length <= 2000, {
+    message: "user messages are limited to 2000 characters",
+    path: ["content"],
+  });
 export type ChatMessage = z.infer<typeof ChatMessageSchema>;
 
 export const ChatRequestSchema = z.object({
