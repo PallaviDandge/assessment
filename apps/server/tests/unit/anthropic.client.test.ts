@@ -52,6 +52,28 @@ describe("AnthropicLlmClient.generateStructured", () => {
   });
 });
 
+describe("AnthropicLlmClient provider options", () => {
+  const ok = { stop_reason: "end_turn", parsed_output: { greeting: "hi" } };
+
+  it("requests Anthropic server-side refusal fallbacks when enabled (direct Anthropic API)", async () => {
+    const { sdk, parse } = sdkWith(ok);
+    await new AnthropicLlmClient(sdk, { ...cfg, serverFallbacks: true }).generateStructured({ ...base, schema: Schema });
+    expect(parse.mock.calls[0][0]).toMatchObject({ betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" });
+  });
+
+  it("omits Anthropic-only beta params when disabled (e.g. via OpenRouter) and honours maxTokens", async () => {
+    const { sdk, parse, stream } = sdkWith(ok);
+    const client = new AnthropicLlmClient(sdk, { ...cfg, serverFallbacks: false, maxTokens: 1500 });
+    await client.generateStructured({ ...base, schema: Schema });
+    for await (const _ of client.streamText(base)) void _;
+    for (const params of [parse.mock.calls[0][0], stream.mock.calls[0][0]]) {
+      expect(params).not.toHaveProperty("betas");
+      expect(params).not.toHaveProperty("fallbacks");
+      expect(params.max_tokens).toBe(1500);
+    }
+  });
+});
+
 describe("AnthropicLlmClient.streamText", () => {
   it("yields only text deltas, skipping thinking and other events", async () => {
     const { sdk } = sdkWith(null, [
