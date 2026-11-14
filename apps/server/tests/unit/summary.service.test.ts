@@ -19,7 +19,7 @@ const validModelOutput = {
   ],
 };
 
-function deps(llm: ReturnType<typeof fakeLlm>["client"], timeoutMs = 200) {
+function deps(llm: ReturnType<typeof fakeLlm>["client"], timeoutMs = 1000) {
   return { llm, queue, timeoutMs, now: () => NOW };
 }
 

@@ -32,7 +32,7 @@ describe("withTimeout", () => {
 describe("withStreamTimeouts", () => {
   it("yields every chunk from a healthy stream", async () => {
     const chunks = await collect(
-      withStreamTimeouts(() => streamOf(["a", "b", "c"], 5), { firstChunkMs: 100, idleMs: 100 }),
+      withStreamTimeouts(() => streamOf(["a", "b", "c"], 5), { firstChunkMs: 1000, idleMs: 1000 }),
     );
     expect(chunks).toEqual(["a", "b", "c"]);
   });

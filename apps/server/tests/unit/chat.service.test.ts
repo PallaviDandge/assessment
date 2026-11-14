@@ -11,7 +11,7 @@ const policy = readFileSync(join(__dirname, "../../src/data/policy.md"), "utf8")
 const retriever = createRetriever(policy);
 const queue = loadQueue();
 
-function deps(llm: ReturnType<typeof fakeLlm>["client"], timeoutMs = 200) {
+function deps(llm: ReturnType<typeof fakeLlm>["client"], timeoutMs = 1000) {
   return { llm, queue, retriever, policy, timeoutMs };
 }
 

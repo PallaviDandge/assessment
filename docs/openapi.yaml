@@ -115,7 +115,11 @@ paths:
                     required: [role, content]
                     properties:
                       role: { type: string, enum: [user, assistant] }
-                      content: { type: string, minLength: 1, maxLength: 2000 }
+                      content:
+                        type: string
+                        minLength: 1
+                        maxLength: 8000
+                        description: User turns are limited to 2000 characters; assistant turns echoed back as history to 8000.
       responses:
         "200":
           description: |

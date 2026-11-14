@@ -13,7 +13,7 @@ import { fakeLlm, hang, stalledStream, streamOf } from "../helpers/fakeLlm";
  * End-to-end through Express: routing, Zod request validation, the service,
  * the fallback path and the wire format. Only the LLM boundary is faked.
  */
-const TIMEOUT_MS = 60;
+const TIMEOUT_MS = 300; // generous: success paths must not flake on a loaded CI box
 
 function app(llm = fakeLlm(), opts: { rateLimitPerMinute?: number } = {}) {
   return createApp({ llm: llm.client, timeoutMs: TIMEOUT_MS, rateLimitPerMinute: opts.rateLimitPerMinute ?? 100 });

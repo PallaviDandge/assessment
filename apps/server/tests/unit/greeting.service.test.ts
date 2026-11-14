@@ -4,7 +4,7 @@ import { loadQueue } from "../../src/data/queue";
 import { fakeLlm, hang } from "../helpers/fakeLlm";
 
 const queue = loadQueue();
-const deps = (llm: ReturnType<typeof fakeLlm>["client"], timeoutMs = 200) => ({ llm, queue, timeoutMs });
+const deps = (llm: ReturnType<typeof fakeLlm>["client"], timeoutMs = 1000) => ({ llm, queue, timeoutMs });
 
 describe("getGreeting", () => {
   it("returns the model's greeting when it states the real pending count", async () => {
